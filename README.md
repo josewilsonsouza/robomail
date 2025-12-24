@@ -33,6 +33,6 @@ python mail.py
    - Campo `Cc`: `copia1@inmetro.gov.br; copia2@inmetro.gov.br; copia3@inmetro.gov.br`
    - Campo `Assunto`: `Solicitação de utililização do transporte Inmetro`
    - Corpo do email: fará uma cópia das informações dos bolsistas:
-    <img width="400" height="500" alt="image" src="https://github.com/user-attachments/assets/b5bf4d90-16e8-4b73-a46c-a7996ed51345" />
+   <img width="400" height="500" alt="image" src="https://github.com/user-attachments/assets/971aee8d-8f76-46c9-bc06-4f2c714bb2b8" />
 
 8. Depois pode digitar `s` para enviar.
