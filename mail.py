@@ -13,8 +13,8 @@ import traceback
 # configs
 URL_PLANILHA = "https://docs.google.com/spreadsheets/d/1VeInFHfXwIrWc06CSn6ode2IRsThyWITMrqFIV1cXoU/export?format=csv"
 URL_WEBMAIL = "https://webmail.inmetro.gov.br/owa/auth/logon.aspx"
-EMAIL_DESTINO = "jwstimbiras@gmail.com"#"diope@inmetro.gov.br"
-EMAILS_COPIA = "jwstimbiras@gmail.com"#"sssilva@colaborador.inmetro.gov.br; abcosta@colaborador.inmetro.gov.br"
+EMAIL_DESTINO = "destinatario@inmetro.gov.br"
+EMAILS_COPIA = "copia1@inmetro.gov.br; copia2@inmetro.gov.br; copia3@inmetro.gov.br"
 
 # info dados
 DB_BOLSISTAS = {

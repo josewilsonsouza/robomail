@@ -1,6 +1,6 @@
 # RoboMail Inmetro
 
-A ideia desse projeto é criar um robô simples que realiza a tarefa de enviar um email semanal para o destinatário: `diope@inmetro.gov.br`. A plataforma de email é o [Webmail](https://webmail.inmetro.gov.br/owa/).
+A ideia desse projeto é criar um robô simples que realiza a tarefa de enviar um email semanal para o destinatário: `destinatario@inmetro.gov.br`. A plataforma de email é o [Webmail](https://webmail.inmetro.gov.br/owa/).
 
 - Primeio, uma enquete é enviada na semana atual, X, que pode ser acessada [AQUI](https://forms.gle/Pj3YoQni55LQSXZ66). Essa enquete pode ser preenchida de segunda à quinta, de X, até às 14:29H, aceita modificações nesse período.
 - Chegando na quinta (ou quando esse código for rodado), automaticamente as respostas serão detectadas, e as informações de email preenchidas.
@@ -29,8 +29,8 @@ python mail.py
   <img width="428" height="107" alt="image" src="https://github.com/user-attachments/assets/7237fadc-8246-477e-9c9a-f3703f985473" />
    
 7. Pronto, agora veja as janelas abrindo e o robô trabalhando. No arquivo `mail.py` ele vai tentar preenhcer assim
-   - Campo `Para`: `jwstimbiras@gmail.com`
-   - Campo `Cc`: `jwstimbiras@gmail.com`
+   - Campo `Para`: `destinatario@inmetro.gov.br`
+   - Campo `Cc`: `copia1@inmetro.gov.br; copia2@inmetro.gov.br; copia3@inmetro.gov.br`
    - Campo `Assunto`: `Solicitação de utililização do transporte Inmetro`
    - Corpo do email: fará uma cópia das informações dos bolsistas:
     <img width="400" height="500" alt="image" src="https://github.com/user-attachments/assets/b5bf4d90-16e8-4b73-a46c-a7996ed51345" />
