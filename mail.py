@@ -10,13 +10,13 @@ from datetime import datetime, timedelta
 import time
 import traceback
 
-# --- CONFIGURAÇÕES ---
+# configs
 URL_PLANILHA = "https://docs.google.com/spreadsheets/d/1VeInFHfXwIrWc06CSn6ode2IRsThyWITMrqFIV1cXoU/export?format=csv"
 URL_WEBMAIL = "https://webmail.inmetro.gov.br/owa/auth/logon.aspx"
 EMAIL_DESTINO = "jwstimbiras@gmail.com"#"diope@inmetro.gov.br"
 EMAILS_COPIA = "jwstimbiras@gmail.com"#"sssilva@colaborador.inmetro.gov.br; abcosta@colaborador.inmetro.gov.br"
 
-# --- BANCO DE DADOS (Seus dados) ---
+# info dados
 DB_BOLSISTAS = {
     "Daniel Marques da Silva": {"linha": "BF-1 - Nilópolis", "func": "Bolsista", "up_uo": "Dmtic/Lainf", "tel": "(21) 97613-6422", "ponto": "Av. Getúlio de moura, 3512"},
     "Davi de Souza Feliz": {"linha": "ZO-3 - Bangu", "func": "Bolsista", "up_uo": "Dmtic/Lainf", "tel": "(21) 99738-6836", "ponto": "Avenida Brasil, passarela 27"},
@@ -46,7 +46,7 @@ def gerar_corpo_email(url_csv, html=False):
         df = pd.read_csv(url_csv)
         df['Carimbo de data/hora'] = pd.to_datetime(df['Carimbo de data/hora'], dayfirst=True)
 
-        # REGRA TEMPORAL: Coleta registros de SEG-QUI 14:29h da semana atual
+        # Coleta registros de SEG-QUI 14:29h da semana atual
         # e envia solicitação para a PRÓXIMA semana
         hoje = datetime.now()
         inicio_semana = hoje - timedelta(days=hoje.weekday())  # Segunda-feira da semana atual
@@ -297,7 +297,7 @@ def enviar_email():
 
         time.sleep(.5)  # Aguarda carregar formulário completamente
 
-        # --- CAMPO PARA ---
+        # Campo "Para"
         campo_para_preenchido = False
         try:
             # Versão Padrão (mais comum) - div contenteditable com id="divTo"
@@ -315,7 +315,7 @@ def enviar_email():
             except Exception as e:
                 print(f"   -> AVISO: Campo 'Para' não encontrado: {e}")
 
-        # --- CAMPO CC ---
+        # Campo "Cc"
         try:
             # Tenta Standard version primeiro (mais comum)
             campo_cc = wait.until(EC.presence_of_element_located((By.ID, "divCc")))
@@ -330,7 +330,7 @@ def enviar_email():
             except:
                 print("   -> AVISO: Campo 'Cc' não encontrado")
 
-        # --- CAMPO ASSUNTO ---
+        # campo "Assunto"
         assunto_preenchido = False
         try:
             # Tenta Standard version primeiro (mais comum)
@@ -348,7 +348,7 @@ def enviar_email():
             except:
                 print("   -> AVISO: Campo 'Assunto' não encontrado.")
 
-        # --- CORPO DO EMAIL ---
+        # corpo do email (HTML formatado)
         corpo_preenchido = False
 
         # ESTRATÉGIA: Abrir HTML renderizado no navegador, copiar, colar
@@ -382,7 +382,7 @@ def enviar_email():
             file_path_url = f"file://{html_temp_path}"
         print(f"   -> Arquivo HTML: {file_path_url}")
 
-        # ESTRATÉGIA ALTERNATIVA: Abrir nova aba vazia primeiro, depois navegar
+        # alternativa abrir nova aba vazia primeiro, depois navegar
         try:
             # Abre nova aba vazia
             driver.execute_script("window.open('about:blank', '_blank');")
@@ -430,7 +430,7 @@ def enviar_email():
             time.sleep(0.3)
             print("   -> HTML renderizado copiado da área de transferência")
 
-            # Fecha APENAS a aba HTML
+            # Fecha só a aba HTML
             driver.close()
             print(f"   -> Aba HTML fechada")
 

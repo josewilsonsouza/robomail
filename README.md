@@ -34,3 +34,5 @@ python mail.py
    - Campo `Assunto`: `Solicitação de utililização do transporte Inmetro`
    - Corpo do email: fará uma cópia das informações dos bolsistas:
     <img width="400" height="500" alt="image" src="https://github.com/user-attachments/assets/b5bf4d90-16e8-4b73-a46c-a7996ed51345" />
+
+8. Depois pode digitar `s` para enviar.

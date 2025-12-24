@@ -1,10 +1,8 @@
-# Como Automatizar o Envio Semanal
+# Automatizar o Envio Semanal
 
 Este guia explica como configurar o Windows Task Scheduler para executar o script automaticamente toda quinta-feira às 14:30.
 
-## Opção 1: Task Scheduler (Recomendado)
-
-### Passo 1: Criar Arquivo Batch
+## Task Scheduler
 
 Primeiro, crie um arquivo `.bat` para executar o script Python:
 
@@ -19,8 +17,6 @@ pause
 ```
 
 3. Salve o arquivo
-
-### Passo 2: Configurar Task Scheduler
 
 1. **Abrir Task Scheduler**:
    - Pressione `Win + R`
@@ -71,8 +67,6 @@ pause
    - Clique em "OK"
    - Se solicitado, digite a senha do usuário Windows
 
-### Passo 3: Testar a Tarefa
-
 Para testar se a tarefa funciona:
 
 1. No Task Scheduler, encontre a tarefa criada
@@ -83,68 +77,6 @@ Para testar se a tarefa funciona:
 
 ---
 
-## Opção 2: Script Python com Loop (Alternativa)
-
-Se preferir não usar Task Scheduler, pode criar um script que fica sempre rodando:
-
-Crie um arquivo `monitor_semanal.py`:
-
-```python
-import time
-from datetime import datetime
-import subprocess
-
-def executar_se_quinta_1430():
-    """Executa o script mail.py se for quinta às 14:30"""
-    agora = datetime.now()
-
-    # Quinta-feira = 3 (0=segunda, 1=terça, etc.)
-    if agora.weekday() == 3:  # Quinta
-        if agora.hour == 14 and agora.minute == 30:
-            print(f"🚀 {agora.strftime('%d/%m/%Y %H:%M')} - Executando envio de email...")
-            try:
-                subprocess.run(["python", "mail.py"])
-                print("✅ Execução concluída!")
-            except Exception as e:
-                print(f"❌ Erro: {e}")
-
-            # Aguarda 2 minutos para não executar múltiplas vezes
-            time.sleep(120)
-
-print("🔄 Monitor iniciado. Aguardando quinta-feira às 14:30...")
-print("Pressione Ctrl+C para parar.")
-
-while True:
-    executar_se_quinta_1430()
-    time.sleep(30)  # Verifica a cada 30 segundos
-```
-
-**Desvantagens**:
-- Precisa deixar o script rodando 24/7
-- Consome recursos constantemente
-- Não é tão confiável quanto Task Scheduler
-
----
-
-## Opção 3: Execução Manual com Lembrete
-
-Se preferir controle manual:
-
-1. Configure um lembrete no Outlook/Google Calendar para toda quinta às 14:25
-2. Execute manualmente: `python mail.py` toda quinta-feira
-
-**Vantagem**: Você sempre valida antes de enviar
-**Desvantagem**: Depende de lembrar
-
----
-
-## Solução de Problemas
-
-### Tarefa não executa no horário
-- Verifique se o computador está ligado às 14:30 (quinta)
-- Verifique se o usuário Windows está logado
-- No Task Scheduler: Clique com direito na tarefa → "Histórico" para ver logs
-
 ### Erro "Python não encontrado"
 - Edite o arquivo `.bat` para usar o caminho completo do Python:
 ```batch
@@ -153,27 +85,6 @@ cd /d "%~dp0"
 "C:\Python39\python.exe" mail.py
 pause
 ```
-
-### Credenciais expiram
-- Se suas credenciais de rede mudam periodicamente, você precisará executar manualmente quando isso acontecer
-- O script sempre pede usuário/senha interativamente
-
-### Email não envia automaticamente
-- O script pede confirmação antes de enviar
-- Para automação total, você precisaria modificar o código para pular confirmações (NÃO recomendado)
-
----
-
-## Recomendação Final
-
-**Use a Opção 1 (Task Scheduler)** porque:
-- ✅ Nativo do Windows, confiável
-- ✅ Não consome recursos quando não está rodando
-- ✅ Histórico e logs de execução
-- ✅ Pode executar mesmo com usuário deslogado
-- ✅ Configuração única, funciona para sempre
-
----
 
 # INSTRUÇÕES PARA LINUX
 
@@ -184,10 +95,10 @@ Se você estiver usando Linux, siga estas adaptações:
 Substitua a linha 378 por uma versão multiplataforma:
 
 ```python
-# ANTES (Windows específico):
+#(Windows específico):
 file_path_url = f"file:///{html_temp_path.replace(chr(92), '/')}"
 
-# DEPOIS (Multiplataforma):
+# Multiplataforma:
 import platform
 if platform.system() == "Windows":
     file_path_url = f"file:///{html_temp_path.replace(chr(92), '/')}"
@@ -197,7 +108,7 @@ else:
 
 ## Automatização com Cron (Linux)
 
-### Passo 1: Criar Script Shell
+### Criar Script Shell
 
 Crie um arquivo `executar_envio_email.sh`:
 
@@ -207,13 +118,13 @@ cd "$(dirname "$0")"
 python3 mail.py
 ```
 
-### Passo 2: Dar permissão de execução
+### Dar permissão de execução
 
 ```bash
 chmod +x executar_envio_email.sh
 ```
 
-### Passo 3: Configurar Cron
+### Configurar Cron
 
 Abra o editor de cron:
 ```bash
@@ -225,17 +136,7 @@ Adicione esta linha (executa toda quinta-feira às 14:30):
 30 14 * * 4 /caminho/completo/para/executar_envio_email.sh
 ```
 
-**Explicação do formato cron:**
-```
-30 14 * * 4
-│  │  │ │ └─── Dia da semana (0=domingo, 4=quinta)
-│  │  │ └───── Mês (1-12)
-│  │  └─────── Dia do mês (1-31)
-│  └────────── Hora (14 = 14h)
-└───────────── Minuto (30)
-```
-
-### Passo 4: Verificar se o cron está ativo
+### Verificar se o cron está ativo
 
 ```bash
 # Ver tarefas agendadas
@@ -245,17 +146,11 @@ crontab -l
 sudo systemctl status cron
 ```
 
-### Passo 5: Testar manualmente
+### Teste
 
 ```bash
 ./executar_envio_email.sh
 ```
-
-## Diferenças Chrome/Chromium no Linux
-
-No Linux, você pode usar:
-- **Google Chrome** (mesmo do Windows)
-- **Chromium** (versão open source)
 
 O `webdriver-manager` detecta automaticamente qual está instalado.
 
@@ -266,43 +161,7 @@ sudo dpkg -i google-chrome-stable_current_amd64.deb
 sudo apt-get install -f
 ```
 
-**Ou usar Chromium:**
+**usar Chromium:**
 ```bash
 sudo apt install chromium-browser
-```
-
-## Problemas Comuns no Linux
-
-### 1. Display não encontrado (headless mode)
-
-Se rodar via cron sem interface gráfica, pode dar erro. Solução:
-
-Adicione no código (após linha 193):
-```python
-options.add_argument("--headless")  # Roda sem abrir janela
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-dev-shm-usage")
-```
-
-**PORÉM**: Modo headless pode ter problemas com a janela popup do email. Ideal é rodar com interface gráfica.
-
-### 2. Permissões de arquivo
-
-```bash
-chmod 644 mail.py
-chmod 755 executar_envio_email.sh
-```
-
-### 3. Variável DISPLAY para cron
-
-Se precisar rodar com interface gráfica via cron:
-```
-30 14 * * 4 DISPLAY=:0 /caminho/completo/para/executar_envio_email.sh
-```
-
-## Logs de Execução (Cron)
-
-Para salvar logs:
-```
-30 14 * * 4 /caminho/completo/para/executar_envio_email.sh >> /var/log/email_transporte.log 2>&1
 ```
