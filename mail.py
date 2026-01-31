@@ -46,42 +46,49 @@ def gerar_corpo_email(url_csv, html=False):
         df = pd.read_csv(url_csv)
         df['Carimbo de data/hora'] = pd.to_datetime(df['Carimbo de data/hora'], dayfirst=True)
 
-        # Coleta registros de SEG-QUI 14:29h da semana atual
+        # Coleta registros a partir de quinta 14:30 da semana anterior até agora
         # e envia solicitação para a PRÓXIMA semana
         hoje = datetime.now()
-        inicio_semana = hoje - timedelta(days=hoje.weekday())  # Segunda-feira da semana atual
-        inicio_semana = inicio_semana.replace(hour=0, minute=0, second=0, microsecond=0)
 
-        # Quinta-feira às 14:29:59 (último momento antes do envio às 14:30)
-        fim_semana = inicio_semana + timedelta(days=3)  # Quinta-feira
-        fim_semana = fim_semana.replace(hour=14, minute=29, second=59, microsecond=999999)
+        # Calcula a quinta-feira anterior às 14:30
+        # Se hoje é quinta após 14:30, a janela começa na quinta passada às 14:30
+        # Se hoje é antes de quinta 14:30, a janela começa na quinta de 2 semanas atrás
+        dias_desde_quinta = (hoje.weekday() - 3) % 7  # 3 = quinta-feira
+        quinta_anterior = hoje - timedelta(days=dias_desde_quinta)
+        quinta_anterior = quinta_anterior.replace(hour=14, minute=30, second=0, microsecond=0)
+
+        # Se estamos antes de quinta 14:30, volta mais uma semana
+        if hoje < quinta_anterior:
+            quinta_anterior = quinta_anterior - timedelta(days=7)
+
+        inicio_janela = quinta_anterior
+        fim_janela = hoje  # Até o momento atual
 
         # Calcula a semana-alvo (próxima semana)
         data_ini, data_fim = obter_datas_proxima_semana()
 
         print("=" * 60)
         print("📅 JANELA DE COLETA (respostas do formulário):")
-        print(f"   De: {inicio_semana.strftime('%d/%m/%Y %H:%M')} (segunda)")
-        print(f"   Até: {fim_semana.strftime('%d/%m/%Y %H:%M')} (quinta)")
+        print(f"   De: {inicio_janela.strftime('%d/%m/%Y %H:%M')} (quinta anterior)")
+        print(f"   Até: {fim_janela.strftime('%d/%m/%Y %H:%M')} (agora)")
         print()
         print("🚌 SEMANA SOLICITADA (transporte):")
         print(f"   De: {data_ini} (próxima segunda)")
         print(f"   Até: {data_fim} (próxima sexta)")
         print("=" * 60)
 
-        # Filtra apenas registros da segunda até quinta 14:29h
-        df_semana = df[(df['Carimbo de data/hora'] >= inicio_semana) &
-                       (df['Carimbo de data/hora'] <= fim_semana)]
+        # Filtra registros da quinta anterior 14:30 até agora
+        df_semana = df[(df['Carimbo de data/hora'] >= inicio_janela) &
+                       (df['Carimbo de data/hora'] <= fim_janela)]
 
         if df_semana.empty:
             print()
             print("⚠️  AVISO: Nenhuma resposta encontrada na janela de coleta.")
             print("   Possíveis causas:")
-            print("   - Nenhum bolsista preencheu o formulário esta semana")
-            print("   - Você está rodando fora do período (seg-qui 14:29h)")
+            print("   - Nenhum bolsista preencheu o formulário neste período")
             print("   - O formulário ainda não recebeu respostas")
             print()
-            return "Nenhuma resposta encontrada de segunda a quinta (até 14:29h) da semana atual."
+            return "Nenhuma resposta encontrada no período (desde quinta 14:30 anterior)."
 
         # Mostra total de registros antes da deduplicação
         print(f"\n📋 Total de registros encontrados: {len(df_semana)}")

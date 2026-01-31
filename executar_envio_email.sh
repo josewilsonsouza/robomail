@@ -1,7 +1,6 @@
-#!/bin/bash
 # Script para executar o envio automático de email de transporte
 # Funciona em Linux/Mac
-
+    
 # Muda para o diretório do script
 cd "$(dirname "$0")"
 
