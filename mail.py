@@ -112,14 +112,14 @@ def gerar_corpo_email(url_csv, html=False):
         if html:
             # Versão HTML colorida
             texto = f"""<html><body style="font-family: Arial, sans-serif; font-size: 11pt;">
-<p>Prezados(as), boa tarde</p>
+<p>Prezados(as), boa tarde!</p>
 <p>Solicito por gentileza a inclusão dos alunos bolsistas relacionados abaixo para utilização do ônibus na semana de <strong>{data_ini} a {data_fim}</strong>:</p>
 <p><strong>Setor: DMTIC/LAINF</strong></p>
 """
             contador = 1
             for index, row in df_recente.iterrows():
                 nome = row['Nome']
-                dias_selecionados = row['Dia']
+                dias_selecionados = row['Dias']
                 dados = DB_BOLSISTAS.get(nome)
 
                 if dados:
@@ -142,19 +142,19 @@ def gerar_corpo_email(url_csv, html=False):
                     print(f"AVISO: Nome '{nome}' não encontrado no banco de dados.")
 
             texto += """
-<p style="margin-top: 20px;">Atenciosamente,<br>[Seu Nome]<br>DMTIC/LAINF</p>
+<p style="margin-top: 20px;">Atenciosamente,<br>José Wilson C. Souza<br>DMTIC/LAINF</p>
 </body></html>
 """
         else:
             # Versão texto simples (preview no terminal)
-            texto = f"Prezados(as), bom dia / boa tarde\n\n"
+            texto = f"Prezados(as), boa tarde!\n\n"
             texto += f"Solicito por gentileza a inclusão dos alunos bolsistas relacionados abaixo para utilização do ônibus na semana de {data_ini} a {data_fim}:\n"
             texto += "Setor: DMTIC/LAINF\n\n"
 
             contador = 1
             for index, row in df_recente.iterrows():
                 nome = row['Nome']
-                dias_selecionados = row['Dia']
+                dias_selecionados = row['Dias']
                 dados = DB_BOLSISTAS.get(nome)
 
                 if dados:
@@ -169,14 +169,14 @@ def gerar_corpo_email(url_csv, html=False):
                 else:
                     print(f"AVISO: Nome '{nome}' não encontrado no banco de dados.")
 
-            texto += "Atenciosamente,José Wilson Conceição de Souza\nDMTIC/LAINF"
+            texto += "Atenciosamente, \n José Wilson Conceição de Souza \n DMTIC/LAINF"
 
         return texto
     except Exception as e:
         return f"Erro ao processar planilha: {e}"
 
 def enviar_email():
-    usuario = input("Digite seu usuário de rede: ")
+    usuario = input("Digite seu usuário: ")
     senha = input("Digite sua senha: ")
 
     # Gera versão texto para preview
@@ -222,9 +222,9 @@ def enviar_email():
             # Verifica se está marcado e desmarca se necessário
             if chk_light.is_selected():
                 driver.execute_script("arguments[0].click();", chk_light)
-                print("   -> Checkbox Light desmarcado - forçando versão Padrão")
+                #print("   -> Checkbox Light desmarcado - forçando versão Padrão")
             else:
-                print("   -> Versão Padrão já selecionada")
+                print("   -> Versão Padrão selecionada")
         except Exception as e:
             print(f"   -> Não foi possível verificar checkbox: {e}")
             print("   -> Continuando com configuração padrão")
@@ -251,7 +251,7 @@ def enviar_email():
             ))
             # Clica via JavaScript
             driver.execute_script("arguments[0].click();", btn)
-            print("   -> ✅ Versão PADRÃO detectada (suporta HTML formatado)")
+            #print("   -> ✅ Versão PADRÃO detectada (suporta HTML formatado)")
             print("   -> Cliquei no botão 'Novo(a)'")
             tentativa_sucesso = True
             time.sleep(1)
@@ -289,7 +289,6 @@ def enviar_email():
 
         if not tentativa_sucesso:
             print("   -> ATENÇÃO: Não consegui clicar em 'Novo' automaticamente.")
-            print("   -> Por favor, CLIQUE MANUALMENTE no botão 'Novo' ou 'Nova mensagem'")
             time.sleep(10)
 
         # Gerencia janelas (caso abra pop-up na versão Padrão)
