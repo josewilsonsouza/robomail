@@ -9,6 +9,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime, timedelta
 import time
 import traceback
+import argparse
+import os
 
 # configs
 URL_PLANILHA = "https://docs.google.com/spreadsheets/d/1VeInFHfXwIrWc06CSn6ode2IRsThyWITMrqFIV1cXoU/export?format=csv"
@@ -175,9 +177,17 @@ def gerar_corpo_email(url_csv, html=False):
     except Exception as e:
         return f"Erro ao processar planilha: {e}"
 
-def enviar_email():
-    usuario = input("Digite seu usuário: ")
-    senha = input("Digite sua senha: ")
+def enviar_email(auto_mode=False):
+    if auto_mode:
+        usuario = os.environ.get("OWA_USERNAME")
+        senha = os.environ.get("OWA_PASSWORD")
+        if not usuario or not senha:
+            print("ERRO: Variáveis OWA_USERNAME e OWA_PASSWORD não definidas.")
+            return
+        print("Modo automático ativado - credenciais lidas das variáveis de ambiente.")
+    else:
+        usuario = input("Digite seu usuário: ")
+        senha = input("Digite sua senha: ")
 
     # Gera versão texto para preview
     corpo_texto = gerar_corpo_email(URL_PLANILHA, html=False)
@@ -192,15 +202,24 @@ def enviar_email():
         print("Cancelando envio por erro nos dados.")
         return
 
-    confirmacao = input("O texto está correto? (s/n): ")
-    if confirmacao.lower() != 's':
-        return
+    if auto_mode:
+        print("Modo automático: confirmação automática do texto.")
+    else:
+        confirmacao = input("O texto está correto? (s/n): ")
+        if confirmacao.lower() != 's':
+            return
 
     print("\n--- INICIANDO ROBÔ 2.0 ---")
     options = webdriver.ChromeOptions()
     # Remove notificações e popups que podem atrapalhar
     options.add_argument("--disable-notifications")
     options.add_experimental_option("excludeSwitches", ["enable-logging"])
+
+    if auto_mode:
+        # Flags necessárias para rodar no GitHub Actions (Linux CI)
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--window-size=1920,1080")
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     wait = WebDriverWait(driver, 15)
@@ -360,7 +379,6 @@ def enviar_email():
         # ESTRATÉGIA: Abrir HTML renderizado no navegador, copiar, colar
         print("   -> Preparando HTML formatado...")
 
-        import os
         html_temp_path = os.path.join(os.path.dirname(__file__), "temp_email.html")
 
         # Salva o HTML em arquivo temporário
@@ -381,8 +399,7 @@ def enviar_email():
         time.sleep(0.5)
 
         # Converte o caminho do arquivo para URL (multiplataforma)
-        import platform
-        if platform.system() == "Windows":
+        if os.name == "nt":
             file_path_url = f"file:///{html_temp_path.replace(chr(92), '/')}"
         else:
             file_path_url = f"file://{html_temp_path}"
@@ -554,7 +571,12 @@ def enviar_email():
         # 7. ENVIAR EMAIL
         if campo_para_preenchido and assunto_preenchido and corpo_preenchido:
             print("\n--- PASSO 7: ENVIANDO EMAIL ---")
-            confirmacao_envio = input("Deseja ENVIAR o email agora? (s/n): ")
+
+            if auto_mode:
+                confirmacao_envio = 's'
+                print("Modo automático: enviando email automaticamente.")
+            else:
+                confirmacao_envio = input("Deseja ENVIAR o email agora? (s/n): ")
 
             if confirmacao_envio.lower() == 's':
                 try:
@@ -591,12 +613,14 @@ def enviar_email():
                     if not botao_enviado:
                         print("   -> ⚠️ AVISO: Botão 'Enviar' não encontrado automaticamente.")
                         print("   -> Por favor, CLIQUE MANUALMENTE no botão 'Enviar' no navegador.")
-                        input("Pressione ENTER após enviar o email...")
+                        if not auto_mode:
+                            input("Pressione ENTER após enviar o email...")
 
                 except Exception as e:
                     print(f"   -> Erro ao tentar enviar: {e}")
                     print("   -> Por favor, clique manualmente no botão 'Enviar'.")
-                    input("Pressione ENTER após enviar o email...")
+                    if not auto_mode:
+                        input("Pressione ENTER após enviar o email...")
             else:
                 print("   -> Envio cancelado pelo usuário.")
 
@@ -607,13 +631,20 @@ def enviar_email():
         else:
             print("⚠️ Alguns campos não foram preenchidos. Verifique o navegador.")
         print("------------------------------------------------")
-        input("Pressione ENTER para fechar o robô...")
-        
+        if not auto_mode:
+            input("Pressione ENTER para fechar o robô...")
+
     except Exception as e:
         print(f"\nERRO: {e}")
         traceback.print_exc()
+        if auto_mode:
+            raise  # Re-lança exceção para o CI detectar falha
     finally:
         driver.quit()
 
 if __name__ == "__main__":
-    enviar_email()
+    parser = argparse.ArgumentParser(description="Robomail - Automação de email de transporte")
+    parser.add_argument("--auto", action="store_true",
+                        help="Modo automático (CI): lê credenciais de env vars, pula confirmações")
+    args = parser.parse_args()
+    enviar_email(auto_mode=args.auto)

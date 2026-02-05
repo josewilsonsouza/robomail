@@ -1,0 +1,35 @@
+name: Enviar Email de Transporte
+
+on:
+  schedule:
+    # Toda quinta-feira às 14:29 BRT (17:29 UTC)
+    - cron: '29 17 * * 4'
+  workflow_dispatch:
+    # Permite disparar manualmente pela aba Actions
+
+jobs:
+  enviar-email:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependências Python
+        run: pip install -r requirements.txt
+
+      - name: Instalar Chrome e xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+
+      - name: Enviar email
+        env:
+          OWA_USERNAME: ${{ secrets.OWA_USERNAME }}
+          OWA_PASSWORD: ${{ secrets.OWA_PASSWORD }}
+        run: xvfb-run --auto-servernum python mail.py --auto
