@@ -13,27 +13,32 @@ import argparse
 import os
 
 # configs
-URL_PLANILHA = "https://docs.google.com/spreadsheets/d/1VeInFHfXwIrWc06CSn6ode2IRsThyWITMrqFIV1cXoU/export?format=csv"
+SPREADSHEET_RESPOSTAS = "1VeInFHfXwIrWc06CSn6ode2IRsThyWITMrqFIV1cXoU"
+SPREADSHEET_BOLSISTAS = "1E4BJwhJSG_bwlkAfmzwDfTMZWZ_4_sVE7JcP6XmN91A"
+URL_PLANILHA = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_RESPOSTAS}/export?format=csv"
+URL_BOLSISTAS = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_BOLSISTAS}/gviz/tq?tqx=out:csv&sheet=bolsistas&headers=1"
 URL_WEBMAIL = "https://webmail.inmetro.gov.br/owa/auth/logon.aspx"
 EMAIL_DESTINO = os.environ.get("EMAIL_DESTINO", "destinatario@inmetro.gov.br")
 EMAILS_COPIA = os.environ.get("EMAILS_COPIA", "copia1@inmetro.gov.br; copia2@inmetro.gov.br; copia3@inmetro.gov.br")
 
-# info dados
-DB_BOLSISTAS = {
-    "Daniel Marques da Silva": {"linha": "BF-1 - Nilópolis", "func": "Bolsista", "up_uo": "Dmtic/Lainf", "tel": "(21) 97613-6422", "ponto": "Av. Getúlio de moura, 3512"},
-    "Davi de Souza Feliz": {"linha": "ZO-3 - Bangu", "func": "Bolsista", "up_uo": "Dmtic/Lainf", "tel": "(21) 99738-6836", "ponto": "Avenida Brasil, passarela 27"},
-    "Gabriel Trajano de Almeida": {"linha": "ZN-6 - Andaraí", "func": "Bolsista", "up_uo": "Dmtic/Lainf", "tel": "(21) 97515-6483", "ponto": "Rua Nicarágua, esquina com a Conde de Agrolongo"},
-    "Isaque Silva dos Santos Faria": {"linha": "BF-4 - Duque de Caxias", "func": "Bolsista", "up_uo": "Dmtic/Lainf", "tel": "(21) 97609-5731", "ponto": "Rodovia Washington Luiz, passarela Vila Canaã"},
-    "Ivan Roberto Meirelles": {"linha": "BF-3- Saracuruna", "func": "Bolsista", "up_uo": "Dmtic/Lainf", "tel": "(21) 97659-6662", "ponto": "Ponto de ônibus Entrada do Barro Branco"},
-    "José Wilson Conceição de Souza": {"linha": "ZN-1 - Ilha do Governador", "func": "Bolsista", "up_uo": "Dmtic/Lainf", "tel": "(21) 98307-2973", "ponto": "Av. Brigadeiro Trompovski - Colégio zerohum / Peixaria"},
-    "Karla Jacqueline Augusto Machado": {"linha": "ZO-2 - ZONA OESTE", "func": "Bolsista", "up_uo": "Dmtic/Lainf", "tel": "9777", "ponto": "Est. Cel. Pedro Corrêa - RIO 2"},
-    "Luan Michel Soares Pereira": {"linha": "BF-4 - Duque de Caxias", "func": "Bolsista", "up_uo": "Dmtic/Lainf", "tel": "(21) 99386-3475", "ponto": "Passarela do bairro Jardim Olimpo"},
-    "Malkai dos Santos Pereira Oliveira": {"linha": "ZN-3 - Tijuca", "func": "Bolsista", "up_uo": "Dmtic/Lainf", "tel": "(21) 99683-7128", "ponto": "Praça saens pena"},
-    "Mina Lura Mathias Monteiro": {"linha": "BF-3-Saracuruna", "func": "Bolsista", "up_uo": "Dmtic/Lainf", "tel": "(21) 99055-7593", "ponto": "Avenida automóvel club, próximo ao 1611"},
-    "Marcus Vinícius Pereira Moreira": {"linha": "ZO-3 - Bangu", "func": "Bolsista", "up_uo": "Dmtic/Lainf", "tel": "(21) 99416-0410", "ponto": "Estrada Intendente Magalhães"},
-    "Paulo Eduardo Silva dos Santos": {"linha": "RS-3 - Petrópolis B", "func": "Bolsista", "up_uo": "Dmtic/Lainf", "tel": "(24) 99971-8074", "ponto": "Rua da Imperatriz, em frente ao Museu Imperial"},
-    "Stephanie Sousa da Silva": {"linha": "ZN-2 - Abolição", "func": "Bolsista", "up_uo": "Dmtic/Lainf", "tel": "(21) 97672-2335", "ponto": "Avenida Brasil, próximo ao IBGE"},
-}
+# Carrega dados dos bolsistas da aba "Bolsistas" do Google Sheets
+def carregar_bolsistas():
+    print("Carregando dados dos bolsistas do Google Sheets...")
+    df = pd.read_csv(URL_BOLSISTAS)
+    #print(f"   -> Colunas encontradas: {list(df.columns)}")
+    #print(f"   -> Primeiras linhas:\n{df.head()}")
+    db = {}
+    for _, row in df.iterrows():
+        db[row['Abreviacao']] = {
+            "nome_completo": row['Nome'],
+            "linha": row['Linha'],
+            "func": row['Func'],
+            "up_uo": row['UP_UO'],
+            "tel": str(row['Tel']),
+            "ponto": row['Ponto'],
+        }
+    print(f"   -> {len(db)} bolsistas carregados.")
+    return db
 
 def obter_datas_proxima_semana():
     hoje = datetime.now()
@@ -44,6 +49,8 @@ def obter_datas_proxima_semana():
 
 def gerar_corpo_email(url_csv, html=False):
     try:
+        DB_BOLSISTAS = carregar_bolsistas()
+
         print("Lendo planilha do Google...")
         df = pd.read_csv(url_csv)
         df['Carimbo de data/hora'] = pd.to_datetime(df['Carimbo de data/hora'], dayfirst=True)
@@ -120,18 +127,19 @@ def gerar_corpo_email(url_csv, html=False):
 """
             contador = 1
             for index, row in df_recente.iterrows():
-                nome = row['Nome']
+                abreviacao = row['Nome']
                 dias_selecionados = row['Dias']
-                dados = DB_BOLSISTAS.get(nome)
+                dados = DB_BOLSISTAS.get(abreviacao)
 
                 if dados:
+                    nome_completo = dados['nome_completo']
                     # Cor de fundo alternada para cada bolsista
                     bg_color = "#e3f2fd" if contador % 2 == 1 else "#fff3e0"
 
                     texto += f"""
 <div style="background-color: {bg_color}; padding: 10px; margin: 10px 0; border-left: 4px solid #1976d2; border-radius: 4px;">
     <p style="margin: 5px 0;"><strong style="color: #1565c0;">{contador:02d} - LINHA:</strong> <span style="color: #d84315;">{dados['linha']}</span></p>
-    <p style="margin: 5px 0;"><strong style="color: #1565c0;">Nome Completo:</strong> {nome}</p>
+    <p style="margin: 5px 0;"><strong style="color: #1565c0;">Nome Completo:</strong> {nome_completo}</p>
     <p style="margin: 5px 0;"><strong style="color: #1565c0;">Categoria funcional:</strong> {dados['func']}</p>
     <p style="margin: 5px 0;"><strong style="color: #1565c0;">UP/UO:</strong> {dados['up_uo']}</p>
     <p style="margin: 5px 0;"><strong style="color: #1565c0;">Ramal/Telefone:</strong> {dados['tel']}</p>
@@ -141,7 +149,7 @@ def gerar_corpo_email(url_csv, html=False):
 """
                     contador += 1
                 else:
-                    print(f"AVISO: Nome '{nome}' não encontrado no banco de dados.")
+                    print(f"AVISO: Abreviação '{abreviacao}' não encontrada no banco de dados.")
 
             texto += """
 <p style="margin-top: 20px;">Atenciosamente,<br>José Wilson C. Souza<br>DMTIC/LAINF</p>
@@ -155,13 +163,14 @@ def gerar_corpo_email(url_csv, html=False):
 
             contador = 1
             for index, row in df_recente.iterrows():
-                nome = row['Nome']
+                abreviacao = row['Nome']
                 dias_selecionados = row['Dias']
-                dados = DB_BOLSISTAS.get(nome)
+                dados = DB_BOLSISTAS.get(abreviacao)
 
                 if dados:
+                    nome_completo = dados['nome_completo']
                     texto += f"{contador:02d} - LINHA: {dados['linha']}\n"
-                    texto += f"Nome Completo: {nome}\n"
+                    texto += f"Nome Completo: {nome_completo}\n"
                     texto += f"Categoria funcional: {dados['func']}\n"
                     texto += f"UP/UO: {dados['up_uo']}\n"
                     texto += f"Ramal/Telefone: {dados['tel']}\n"
@@ -169,7 +178,7 @@ def gerar_corpo_email(url_csv, html=False):
                     texto += f"PONTO DE EMBARQUE: {dados['ponto']}\n\n"
                     contador += 1
                 else:
-                    print(f"AVISO: Nome '{nome}' não encontrado no banco de dados.")
+                    print(f"AVISO: Abreviação '{abreviacao}' não encontrada no banco de dados.")
 
             texto += "Atenciosamente, \n José Wilson Conceição de Souza \n DMTIC/LAINF"
 
