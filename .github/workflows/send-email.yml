@@ -2,8 +2,8 @@ name: Enviar Email de Transporte
 
 on:
   schedule:
-    # Toda quinta-feira às 14:29 BRT (17:29 UTC)
-    - cron: '29 17 * * 4'
+    # Sexta-feira às 15:26 BRT (18:26 UTC) - TESTE TEMPORÁRIO
+    - cron: '26 18 * * 5'
   workflow_dispatch:
     # Permite disparar manualmente pela aba Actions
 
