@@ -15,8 +15,8 @@ import os
 # configs
 URL_PLANILHA = "https://docs.google.com/spreadsheets/d/1VeInFHfXwIrWc06CSn6ode2IRsThyWITMrqFIV1cXoU/export?format=csv"
 URL_WEBMAIL = "https://webmail.inmetro.gov.br/owa/auth/logon.aspx"
-EMAIL_DESTINO = "destinatario@inmetro.gov.br"
-EMAILS_COPIA = "copia1@inmetro.gov.br; copia2@inmetro.gov.br; copia3@inmetro.gov.br"
+EMAIL_DESTINO = os.environ.get("EMAIL_DESTINO", "destinatario@inmetro.gov.br")
+EMAILS_COPIA = os.environ.get("EMAILS_COPIA", "copia1@inmetro.gov.br; copia2@inmetro.gov.br; copia3@inmetro.gov.br")
 
 # info dados
 DB_BOLSISTAS = {
@@ -259,16 +259,6 @@ def enviar_email(auto_mode=False):
             print(f"   -> Não foi possível verificar checkbox: {e}")
             print("   -> Continuando com configuração padrão")
 
-        # Manipula campo oculto 'flags' para forçar Standard (bit 1 = Light)
-        try:
-            flags_field = driver.find_element(By.NAME, "flags")
-            current_flags = int(flags_field.get_attribute("value"))
-            new_flags = current_flags & ~1  # Remove bit Light
-            driver.execute_script(f"arguments[0].value = '{new_flags}';", flags_field)
-            print(f"   -> Flags alterado de {current_flags} para {new_flags}")
-        except Exception as e:
-            print(f"   -> Campo flags não encontrado: {e}")
-
         time.sleep(1)
 
         # 4. Entrar
@@ -280,81 +270,6 @@ def enviar_email(auto_mode=False):
 
         # Aguarda a caixa de entrada carregar completamente
         time.sleep(5)
-
-        if auto_mode:
-            driver.save_screenshot("debug_apos_login.png")
-            print(f"   -> Screenshot pós-login salvo (debug_apos_login.png)")
-            print(f"   -> URL atual: {driver.current_url}")
-            print(f"   -> Título da página: {driver.title}")
-
-        # 4b. Se versão Light carregou, tenta mudar para Standard via Opções
-        if "light" in driver.title.lower():
-            print("   -> Versão Light detectada! Tentando mudar para Standard via Opções...")
-            try:
-                # Navega para a página de Opções do OWA
-                base_url = driver.current_url.split('?')[0].rstrip('/')
-                driver.get(f"{base_url}/?ae=Options&t=Messaging")
-                time.sleep(3)
-
-                if auto_mode:
-                    driver.save_screenshot("debug_opcoes.png")
-
-                # Procura checkbox "Usar versão light" / "Use light version" e desmarca
-                chk_encontrado = False
-                selectors_chk = [
-                    (By.ID, "chkLght"),
-                    (By.NAME, "chkLght"),
-                    (By.XPATH, "//input[@type='checkbox' and contains(@id, 'ght')]"),
-                    (By.XPATH, "//input[@type='checkbox' and contains(@name, 'ght')]"),
-                    (By.CSS_SELECTOR, "input[type='checkbox']"),
-                ]
-                for sel_type, sel_value in selectors_chk:
-                    try:
-                        checkboxes = driver.find_elements(sel_type, sel_value)
-                        for chk in checkboxes:
-                            if chk.is_selected():
-                                chk.click()
-                                time.sleep(0.3)
-                                chk_encontrado = True
-                                print(f"   -> Desmarcou checkbox Light nas Opções via {sel_value}")
-                                break
-                        if chk_encontrado:
-                            break
-                    except:
-                        continue
-
-                if chk_encontrado:
-                    # Salva as opções clicando em Salvar/Save
-                    selectors_salvar = [
-                        (By.XPATH, "//input[@type='submit' and contains(@value, 'alvar')]"),
-                        (By.XPATH, "//input[@type='submit' and contains(@value, 'ave')]"),
-                        (By.CSS_SELECTOR, "input[type='submit']"),
-                    ]
-                    for sel_type, sel_value in selectors_salvar:
-                        try:
-                            btn_salvar = driver.find_element(sel_type, sel_value)
-                            btn_salvar.click()
-                            print(f"   -> Opções salvas!")
-                            time.sleep(3)
-                            break
-                        except:
-                            continue
-
-                    # Volta para a caixa de entrada (agora deve ser Standard)
-                    driver.get(f"{base_url}/")
-                    time.sleep(5)
-                    print(f"   -> Recarregou inbox. Título: {driver.title}")
-
-                    if auto_mode:
-                        driver.save_screenshot("debug_apos_opcoes.png")
-                else:
-                    print("   -> Não encontrou checkbox Light nas Opções")
-                    # Volta para a caixa de entrada
-                    driver.get(f"{base_url}/")
-                    time.sleep(3)
-            except Exception as e:
-                print(f"   -> Erro ao tentar mudar via Opções: {e}")
-                traceback.print_exc()
 
         # 5. Detectar Versão e Clicar em Novo
         print("Passo 5: Verificando versão carregada...")
@@ -420,11 +335,6 @@ def enviar_email(auto_mode=False):
 
         # Aguarda o formulário de composição carregar
         time.sleep(3)
-
-        if auto_mode:
-            driver.save_screenshot("debug_apos_novo.png")
-            print(f"   -> Screenshot pós-Novo salvo (debug_apos_novo.png)")
-            print(f"   -> URL atual: {driver.current_url}")
 
         # 6. Preencher E-mail (Tenta seletores de ambas as versões)
         print("Passo 6: Escrevendo e-mail...")

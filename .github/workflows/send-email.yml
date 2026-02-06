@@ -32,16 +32,9 @@ jobs:
         env:
           OWA_USERNAME: ${{ secrets.OWA_USERNAME }}
           OWA_PASSWORD: ${{ secrets.OWA_PASSWORD }}
+          EMAIL_DESTINO: ${{ secrets.EMAIL_DESTINO }}
+          EMAILS_COPIA: ${{ secrets.EMAILS_COPIA }}
         run: xvfb-run --auto-servernum python mail.py --auto
-
-      - name: Upload screenshots de debug
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-screenshots
-          path: |
-            debug_*.png
-          if-no-files-found: ignore
 
       - name: Notificação via App GitHub
         if: success()
