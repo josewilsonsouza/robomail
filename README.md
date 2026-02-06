@@ -5,7 +5,7 @@ A ideia desse projeto é criar um robô simples que realiza a tarefa de enviar u
 - Primeiro, os passeiros preenchem um formulário, que pode ser acessado [AQUI](https://forms.gle/Pj3YoQni55LQSXZ66), selecionando seus dias para uso do transporte para a **SEMANA SEGUINTE**. 
 - ⚠️Esse código coleta os dados preenchidos entre **14:30** da **ULTIMA QUINTA FEIRA** até o momento da sua execução.
 - É permissível os passageiros responderem mais de uma vez o formulário, caso mudem de ideia. Será considerado apenas a última resposta.
-- Caso esse código seja programado para enviar automaticamente o email, por exemplo, toda Quinta, às 14:29, se alguém responder após esse período, sua solicitação será desconsiderada para a semana seguinte, pois o email já foi enviado. Ele deverá solicitar o transporte por si mesmo.
+- O email é enviado automaticamente toda **Quinta-feira por volta das 13:00 (BRT)** via GitHub Actions, disparado por um agendamento no Google Apps Script. Se alguém responder após esse horário, sua solicitação será desconsiderada para a semana seguinte, pois o email já foi enviado. Ele deverá solicitar o transporte por si mesmo.
 - Voce pode ver as respostas do formulário [AQUI](https://docs.google.com/spreadsheets/d/1VeInFHfXwIrWc06CSn6ode2IRsThyWITMrqFIV1cXoU/edit?usp=sharing).
 
 ## COMO USAR
@@ -39,3 +39,16 @@ python mail.py
    - Corpo do email: fará uma cópia das informações dos passageiros.
 
 8. Depois pode digitar `s` para enviar.
+
+## ENVIO AUTOMÁTICO
+
+O envio automático funciona com duas peças:
+
+1. **Google Apps Script** - Um script externo agendado para toda quinta-feira ~13:00 (BRT) que dispara o workflow do GitHub Actions via API (`workflow_dispatch`).
+2. **GitHub Actions** - O workflow (`.github/workflows/send-email.yml`) executa o `mail.py --auto` em um runner Ubuntu com Chrome e xvfb. As credenciais e destinatários são configurados via **GitHub Secrets**:
+   - `OWA_USERNAME` - Usuário do Webmail
+   - `OWA_PASSWORD` - Senha do Webmail
+   - `EMAIL_DESTINO` - Endereço de destino
+   - `EMAILS_COPIA` - Endereços em cópia (separados por `;`)
+
+O workflow também pode ser disparado manualmente pela aba **Actions** no GitHub (botão "Run workflow").
