@@ -1,6 +1,7 @@
 # Oninmetro
 
-A ideia desse projeto é criar um robô simples que realiza a tarefa de enviar um email semanal de solicitação de Transporte para o Inmetro. O destinatário é, para testes: `destinatario@inmetro.gov.br`. A plataforma de email é o [Webmail](https://webmail.inmetro.gov.br/owa/).
+A ideia desse projeto é criar um robô simples que realiza a tarefa de enviar um email semanal de solicitação de Transporte para o Inmetro e automatizar esse envio toda quinta-feira, entre 13h00 e 14h00, utilizando duas ferramentas: **GithubActions** e **Google App Scripts**.
+> **Nota:** A plataforma de email é o [Webmail](https://webmail.inmetro.gov.br/owa/). 
 
 - Primeiro, os passeiros preenchem um formulário, que pode ser acessado [AQUI](https://forms.gle/Pj3YoQni55LQSXZ66), selecionando seus dias para uso do transporte para a **SEMANA SEGUINTE**. 
 - ⚠️Esse código coleta os dados preenchidos entre **14:30** da **ULTIMA QUINTA FEIRA** até o momento da sua execução.
@@ -8,7 +9,8 @@ A ideia desse projeto é criar um robô simples que realiza a tarefa de enviar u
 - O email é enviado automaticamente toda **Quinta-feira por volta das 13:00 (BRT)** via GitHub Actions, disparado por um agendamento no Google Apps Script. Se alguém responder após esse horário, sua solicitação será desconsiderada para a semana seguinte, pois o email já foi enviado. Ele deverá solicitar o transporte por si mesmo.
 - Voce pode ver as respostas do formulário [AQUI](https://docs.google.com/spreadsheets/d/1VeInFHfXwIrWc06CSn6ode2IRsThyWITMrqFIV1cXoU/edit?usp=sharing).
 
-## COMO USAR
+## RUN LOCAL
+Siga estes passos a seguir se você quer testar o robô localmente na sua máquina.
 1. Se já tem o `Python` na sua máquina, vai precisar das seguintes instalações:
 ```bash
 pip install pandas, selenium, webdriver_manager, datetime, time, traceback
