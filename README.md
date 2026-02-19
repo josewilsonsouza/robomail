@@ -1,5 +1,7 @@
 # Oninmetro
 
+![Oninmetro](./images/oninmetro.png)
+
 A ideia desse projeto é criar um robô simples que realiza a tarefa de enviar um email semanal de solicitação de Transporte para o Inmetro e automatizar esse envio toda quinta-feira, entre 13h00 e 14h00, utilizando duas ferramentas: **GithubActions** e **Google App Scripts**.
 > **Nota:** A plataforma de email é o [Webmail](https://webmail.inmetro.gov.br/owa/). 
 
