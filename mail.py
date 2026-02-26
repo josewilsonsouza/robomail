@@ -55,22 +55,20 @@ def gerar_corpo_email(url_csv, html=False):
         df = pd.read_csv(url_csv)
         df['Carimbo de data/hora'] = pd.to_datetime(df['Carimbo de data/hora'], dayfirst=True)
 
-        # Coleta registros a partir de quinta 14:30 da semana anterior até agora
+        # Coleta registros a partir de quinta 14:01 da semana anterior até agora
         # e envia solicitação para a PRÓXIMA semana
+        # (o Google Apps Script dispara entre 13:00 e 14:00, então 14:01 garante
+        #  que respostas após esse horário entram na janela da semana seguinte)
         hoje = datetime.now()
 
-        # Calcula a quinta-feira anterior às 13:00
-        # Se hoje é quinta após 14:30, a janela começa na quinta passada às 14:30
-        # Se hoje é antes de quinta 14:30, a janela começa na quinta de 2 semanas atrás
+        # Calcula a quinta-feira anterior às 14:01
+        # Se hoje é quinta, usa a quinta passada (7 dias atrás)
+        # Se hoje é outro dia, usa a quinta mais recente
         dias_desde_quinta = (hoje.weekday() - 3) % 7  # 3 = quinta-feira
         if dias_desde_quinta == 0:
-            dias_desde_quinta = 7  # Hoje é quinta → usar a quinta passada
+            dias_desde_quinta = 7  # Hoje é quinta -> usar a quinta passada
         quinta_anterior = hoje - timedelta(days=dias_desde_quinta)
-        quinta_anterior = quinta_anterior.replace(hour=13, minute=0, second=0, microsecond=0)
-
-        # Se estamos antes de quinta 13:00, volta mais uma semana
-        if hoje < quinta_anterior:
-            quinta_anterior = quinta_anterior - timedelta(days=7)
+        quinta_anterior = quinta_anterior.replace(hour=14, minute=1, second=0, microsecond=0)
 
         inicio_janela = quinta_anterior
         fim_janela = hoje  # Até o momento atual
@@ -88,7 +86,7 @@ def gerar_corpo_email(url_csv, html=False):
         print(f"   Até: {data_fim} (próxima sexta)")
         print("=" * 60)
 
-        # Filtra registros da quinta anterior 14:30 até agora
+        # Filtra registros da quinta anterior 14:01 até agora
         df_semana = df[(df['Carimbo de data/hora'] >= inicio_janela) &
                        (df['Carimbo de data/hora'] <= fim_janela)]
 
@@ -99,7 +97,7 @@ def gerar_corpo_email(url_csv, html=False):
             print("   - Nenhum bolsista preencheu o formulário neste período")
             print("   - O formulário ainda não recebeu respostas")
             print()
-            return "Nenhuma resposta encontrada no período (desde quinta 14:30 anterior)."
+            return "Nenhuma resposta encontrada no período (desde quinta 14:01 anterior)."
 
         # Mostra total de registros antes da deduplicação
         print(f"\n📋 Total de registros encontrados: {len(df_semana)}")
