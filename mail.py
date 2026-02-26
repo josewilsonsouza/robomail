@@ -59,12 +59,12 @@ def gerar_corpo_email(url_csv, html=False):
         # e envia solicitação para a PRÓXIMA semana
         hoje = datetime.now()
 
-        # Calcula a quinta-feira anterior às 14:30
+        # Calcula a quinta-feira anterior às 13:00
         # Se hoje é quinta após 14:30, a janela começa na quinta passada às 14:30
         # Se hoje é antes de quinta 14:30, a janela começa na quinta de 2 semanas atrás
         dias_desde_quinta = (hoje.weekday() - 3) % 7  # 3 = quinta-feira
         quinta_anterior = hoje - timedelta(days=dias_desde_quinta)
-        quinta_anterior = quinta_anterior.replace(hour=14, minute=30, second=0, microsecond=0)
+        quinta_anterior = quinta_anterior.replace(hour=13, minute=0, second=0, microsecond=0)
 
         # Se estamos antes de quinta 14:30, volta mais uma semana
         if hoje < quinta_anterior:
