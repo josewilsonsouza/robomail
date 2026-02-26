@@ -63,10 +63,12 @@ def gerar_corpo_email(url_csv, html=False):
         # Se hoje é quinta após 14:30, a janela começa na quinta passada às 14:30
         # Se hoje é antes de quinta 14:30, a janela começa na quinta de 2 semanas atrás
         dias_desde_quinta = (hoje.weekday() - 3) % 7  # 3 = quinta-feira
+        if dias_desde_quinta == 0:
+            dias_desde_quinta = 7  # Hoje é quinta → usar a quinta passada
         quinta_anterior = hoje - timedelta(days=dias_desde_quinta)
         quinta_anterior = quinta_anterior.replace(hour=13, minute=0, second=0, microsecond=0)
 
-        # Se estamos antes de quinta 14:30, volta mais uma semana
+        # Se estamos antes de quinta 13:00, volta mais uma semana
         if hoje < quinta_anterior:
             quinta_anterior = quinta_anterior - timedelta(days=7)
 
